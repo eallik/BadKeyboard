@@ -153,7 +153,7 @@ var qwertyKeys = 'QWERTYUIOPASDFGHJKLZXCVBNM';
 var dvorakKeys = 'PYFGCRLAOEUIDHTNSQJKXBMWVZ';
 var colemakKeys = 'QWFPGJLUYARSTDHNEIOZXCVBKM';
 
-var ROWS = {
+var KEYBOARDS = {
     "qwerty" : { layout: [{numKeys: 10, offset: 0}, {numKeys:  9, offset: 0}, {numKeys: 7, offset: 1}],
                  allKeys: qwertyKeys },
     "dvorak" : { layout: [{numKeys:  7, offset: 3}, {numKeys: 10, offset: 0}, {numKeys: 9, offset: 2}],
@@ -170,7 +170,7 @@ function numKeysBeforeRow(rowNum, numKeysOnRow) {
 }
 
 function setKb(kbName) {
-    var keyboard = ROWS[kbName];
+    var keyboard = KEYBOARDS[kbName];
 
     var numKeysOnRow = keyboard.layout.map(function(x) { return x.numKeys; });
     var rowOffsets   = keyboard.layout.map(function(x) { return x.offset ; });
