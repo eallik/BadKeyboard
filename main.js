@@ -13,6 +13,7 @@ var bumps = '<span class="bump" style="left:215px;top:' + (keyboardStartY + 91) 
     '<span class="bump" style="left:395px;top:' + (keyboardStartY + 91) + 'px;">_</span>';
 
 function getChar(e) {
+    // TODO: user ternary
     var keyNum;
     if (window.event) {// IE8 and earlier
 	keyNum = e.keyCode;
@@ -23,6 +24,13 @@ function getChar(e) {
     return String.fromCharCode(keyNum).toUpperCase();
 }
 function keyPressed(e) {
+    // TODO: only catch events for
+    // alphabetic keypresses; everything
+    // else, incl alphabetic with a
+    // modifier key, should be ignored
+    // if (e.altKey || e.ctrlKey || e.metaKey)
+    //     return false;
+
     var keyNow = getChar(e);
     if (letterPatt.test(keyNow)) {
 	if (badKeyCount === -1) {
@@ -140,6 +148,7 @@ function createKey(lineNum, lineKeyNum, key) {
 	'px;">' + key + '</span>';
 }
 
+// TODO: get rid of these and replace by KEYBOARDS["qwerty"].allKeys etc
 var qwertyKeys = 'QWERTYUIOPASDFGHJKLZXCVBNM';
 var dvorakKeys = 'PYFGCRLAOEUIDHTNSQJKXBMWVZ';
 var colemakKeys = 'QWFPGJLUYARSTDHNEIOZXCVBKM';
