@@ -1,8 +1,10 @@
 var startTime;
 var badKeyCount = -1;//number of misplaced keys, -1 if game has not started.
 
+
+// don't use uninitialized variables
 var moves;
-var keyDown;
+var keyDown = null;
 var resultHighlights = '';//keys that have been highlighted in any way (green if wrong became right, red if right became wrong).
 
 var letterPatt = /^[A-Z]{1}$/;
@@ -26,16 +28,16 @@ function getChar(e) {
 function keyPressed(e) {
     var keyNow = getChar(e);
     if (letterPatt.test(keyNow)) {
-	if (badKeyCount == -1) {
+	if (badKeyCount === -1) {
 	    scrambleAndStart();
 	}
-	if (!keyDown) {
+	if (keyDown === null) {
 	    clearResultHighlights();
 	    keyDown = keyNow;
 	    document.getElementById(keyDown).setAttribute('class', 'key_down');
-	} else if (keyNow == keyDown) {
+	} else if (keyNow === keyDown) {
 	    document.getElementById(keyDown).setAttribute('class', 'key');
-	    keyDown = '';
+	    keyDown = null;
 	} else {
 	    var keyDownContent = document.getElementById(keyDown).innerHTML;
 	    var keyNowContent = document.getElementById(keyNow).innerHTML;
@@ -43,7 +45,7 @@ function keyPressed(e) {
 	    highlightMoveResult(keyDown, keyDownContent, keyNowContent);
 	    document.getElementById(keyNow).innerHTML = keyDownContent;
 	    document.getElementById(keyDown).innerHTML = keyNowContent;
-	    keyDown = '';
+	    keyDown = null;
 	    ++moves;
 	}
     }
@@ -51,15 +53,17 @@ function keyPressed(e) {
 }
 function clearResultHighlights() {
     for (i = 0; i < resultHighlights.length; ++i) {
-	document.getElementById(resultHighlights.charAt(i)).setAttribute('class', 'key');
+	document
+            .getElementById(resultHighlights.charAt(i))
+            .setAttribute('class', 'key');
     }
 }
 function highlightMoveResult(key, content, otherContent) {
-    if (otherContent == key) {
+    if (otherContent === key) {
 	--badKeyCount;
 	resultHighlights += key;
 	document.getElementById(key).setAttribute('class', 'key_correct');
-    } else if (content == key) {
+    } else if (content === key) {
 	++badKeyCount;
 	resultHighlights += key;
 	document.getElementById(key).setAttribute('class', 'key_wrong');
@@ -114,11 +118,11 @@ function updateProgress() {
     if (sec < 10) {
 	sec = '0' + sec;
     }
-    if (badKeyCount == -1) {
+    if (badKeyCount === -1) {
 	clearResultHighlights();
 	document.getElementById('progress').innerHTML = 'Press a letter key on keyboard to start a new game.';
 	return;
-    } else if (badKeyCount == 0) {
+    } else if (badKeyCount === 0) {
 	clearResultHighlights();
 	document.getElementById("progress").innerHTML = 'Excellent! Arranging keys took ' + min + ':' + sec + ' and ' + moves +
 	    ' moves.<br/>Press a letter key on keyboard to start a new game.';
@@ -129,13 +133,11 @@ function updateProgress() {
     setTimeout('updateProgress()', 100);//this supicious looking line just calls the function once, no need to panic. 
 }
 function createKey(lineNum, lineKeyNum, key) {
-    if (lineNum == 0) {
-	var lineStartX = 20;
-    } else if (lineNum == 1) {
-	var lineStartX = 35;
-    } else {
-	var lineStartX = 5;
-    }
+    var lineStartX =
+        lineNum === 0 ? 20 :
+        lineNum === 1 ? 35 :
+        5;
+
     return '<span id="' + key + '" class="key" style="left:' +
 	(lineStartX + lineKeyNum * 60) + 'px;top:' + (keyboardStartY + lineNum * 65) +
 	'px;">' + key + '</span>';
