@@ -4,13 +4,10 @@ var badKeyCount = -1;//number of misplaced keys, -1 if game has not started.
 
 // don't use uninitialized variables
 var moves;
-var keyDown = null;
+var keyDown = ''; // TODO: use `null` for special value not ''
 var resultHighlights = '';//keys that have been highlighted in any way (green if wrong became right, red if right became wrong).
 
 var letterPatt = /^[A-Z]{1}$/;
-var qwertyKeys = 'QWERTYUIOPASDFGHJKLZXCVBNM';
-var dvorakKeys = 'PYFGCRLAOEUIDHTNSQJKXBMWVZ';
-var colemakKeys = 'QWFPGJLUYARSTDHNEIOZXCVBKM';
 var keyboardStartY = 125;//TODO depends on how much space the table takes.
 var bumps = '<span class="bump" style="left:215px;top:' + (keyboardStartY + 91) + 'px;">_</span>' +
     '<span class="bump" style="left:395px;top:' + (keyboardStartY + 91) + 'px;">_</span>';
@@ -31,13 +28,13 @@ function keyPressed(e) {
 	if (badKeyCount === -1) {
 	    scrambleAndStart();
 	}
-	if (keyDown === null) {
+	if (keyDown === '') {
 	    clearResultHighlights();
 	    keyDown = keyNow;
 	    document.getElementById(keyDown).setAttribute('class', 'key_down');
 	} else if (keyNow === keyDown) {
 	    document.getElementById(keyDown).setAttribute('class', 'key');
-	    keyDown = null;
+	    keyDown = '';
 	} else {
 	    var keyDownContent = document.getElementById(keyDown).innerHTML;
 	    var keyNowContent = document.getElementById(keyNow).innerHTML;
@@ -45,7 +42,7 @@ function keyPressed(e) {
 	    highlightMoveResult(keyDown, keyDownContent, keyNowContent);
 	    document.getElementById(keyNow).innerHTML = keyDownContent;
 	    document.getElementById(keyDown).innerHTML = keyNowContent;
-	    keyDown = null;
+	    keyDown = '';
 	    ++moves;
 	}
     }
@@ -142,58 +139,53 @@ function createKey(lineNum, lineKeyNum, key) {
 	(lineStartX + lineKeyNum * 60) + 'px;top:' + (keyboardStartY + lineNum * 65) +
 	'px;">' + key + '</span>';
 }
-function setQwerty() {
+
+var qwertyKeys = 'QWERTYUIOPASDFGHJKLZXCVBNM';
+var dvorakKeys = 'PYFGCRLAOEUIDHTNSQJKXBMWVZ';
+var colemakKeys = 'QWFPGJLUYARSTDHNEIOZXCVBKM';
+
+var ROWS = {
+    "qwerty" : { layout: [{numKeys: 10, offset: 0}, {numKeys:  9, offset: 0}, {numKeys: 7, offset: 1}],
+                 allKeys: qwertyKeys },
+    "dvorak" : { layout: [{numKeys:  7, offset: 3}, {numKeys: 10, offset: 0}, {numKeys: 9, offset: 2}],
+                 allKeys: dvorakKeys },
+    "colemak": { layout: [{numKeys:  9, offset: 0}, {numKeys: 10, offset: 0}, {numKeys: 7, offset: 1}],
+                 allKeys: colemakKeys },
+}
+
+function numKeysBeforeRow(rowNum, numKeysOnRow) {
+    var ret = 0;
+    for (var i = 0; i < rowNum; ++i)
+        ret += numKeysOnRow[i];
+    return ret;
+}
+
+function setKb(kbName) {
+    var keyboard = ROWS[kbName];
+
+    var numKeysOnRow = keyboard.layout.map(function(x) { return x.numKeys; });
+    var rowOffsets   = keyboard.layout.map(function(x) { return x.offset ; });
+    var allKeys      = keyboard.allKeys;
+
     var kbrd = '';
-    for (var i = 0; i < 10; ++i) {
-	kbrd += createKey(0, i, qwertyKeys.charAt(i));
-    }
-    for (var i = 0; i < 9; ++i) {
-	kbrd += createKey(1, i, qwertyKeys.charAt(i + 10));
-    }
-    for (var i = 0; i < 7; ++i) {
-	kbrd += createKey(2, i + 1, qwertyKeys.charAt(i + 19));
-    }
+    for (var i = 0; i < numKeysOnRow[0]; ++i)
+	kbrd += createKey(0, i + rowOffsets[0], allKeys.charAt(i + numKeysBeforeRow(0, numKeysOnRow)));
+    for (var i = 0; i < numKeysOnRow[1]; ++i)
+	kbrd += createKey(1, i + rowOffsets[1], allKeys.charAt(i + numKeysBeforeRow(1, numKeysOnRow)));
+    for (var i = 0; i < numKeysOnRow[2]; ++i)
+	kbrd += createKey(2, i + rowOffsets[2], allKeys.charAt(i + numKeysBeforeRow(2, numKeysOnRow)));
     kbrd += bumps;
     document.getElementById('keyboard').innerHTML = kbrd;
 }
-function setDvorak() {
-    var kbrd = '';
-    for (var i = 0; i < 7; ++i) {
-	kbrd += createKey(0,  i + 3, dvorakKeys.charAt(i));
-    }
-    for (var i = 0; i < 10; ++i) {
-	kbrd += createKey(1, i, dvorakKeys.charAt(i + 7));
-    }
-    for (var i = 0; i < 9; ++i) {
-	kbrd += createKey(2, i + 2, dvorakKeys.charAt(i + 17));
-    }
-    kbrd += bumps;
-    document.getElementById('keyboard').innerHTML = kbrd;
-}
-function setColemak() {
-    var kbrd = '';
-    for (var i = 0; i < 9; ++i) {
-	kbrd += createKey(0, i, colemakKeys.charAt(i));
-    }
-    for (var i = 0; i < 10; ++i) {
-	kbrd += createKey(1, i, colemakKeys.charAt(i + 9));
-    }
-    for (var i = 0; i < 7; ++i) {
-	kbrd += createKey(2, i + 1, colemakKeys.charAt(i + 19));
-    }
-    kbrd += bumps;
-    document.getElementById('keyboard').innerHTML = kbrd;
-}
+function setQwerty()  { setKb("qwerty" ); }
+function setDvorak()  { setKb("dvorak" ); }
+function setColemak() { setKb("colemak"); }
+
 function setKeyboard() {
     keyDown = '';
     var sel = document.getElementById('keyboard_select');
-    var kbrd = sel.options[sel.selectedIndex].text;
-    if (kbrd === "QWERTY") {
-	setQwerty();
-    } else if (kbrd === "Dvorak") {
-	setDvorak();
-    } else if (kbrd === "Colemak") {
-	setColemak();
-    }
+    var kbrdLabel = sel.options[sel.selectedIndex].text;
+    var kbrdName = kbrdLabel.toLowerCase();
+    setKb(kbrdName);
     badKeyCount = -1;
 }
